@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Melodify | OAuth Callback</title>
+    <title>Melodify | Authenticating...</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -11,26 +11,33 @@
     <div class="container">
         <div class="header">
             <h1>Authenticating...</h1>
-            <p>Please wait while we redirect you.</p>
+            <p>Please wait while we redirect you to the app.</p>
         </div>
         
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script>
-            // Parse the access token from the URL hash provided by Supabase
-            const hash = window.location.hash;
-            if (hash) {
-                const params = new URLSearchParams(hash.substring(1));
-                const accessToken = params.get('access_token');
-                
-                if (accessToken) {
-                    window.location.href = `melodify://auth?sessionCode=${accessToken}`;
+            // We use Supabase JS to process the ?code= PKCE exchange or #access_token fragment automatically!
+            const supabase = supabase.createClient("{{ supabase_url }}", "{{ supabase_key }}");
+            
+            supabase.auth.getSession().then(({ data, error }) => {
+                if (error) {
+                    document.querySelector('.header p').innerText = "Authentication failed: " + error.message;
+                    setTimeout(() => { window.location.href = '/login'; }, 3000);
+                } else if (data.session) {
+                    // Successfully retrieved the session! Redirect back to the Android App
+                    window.location.href = `melodify://auth?sessionCode=${data.session.access_token}`;
                 } else {
-                    document.querySelector('.header p').innerText = "Authentication failed. Redirecting to login...";
+                    document.querySelector('.header p').innerText = "No session found. Redirecting to login...";
                     setTimeout(() => { window.location.href = '/login'; }, 2000);
                 }
-            } else {
-                document.querySelector('.header p').innerText = "No session found. Redirecting to login...";
-                setTimeout(() => { window.location.href = '/login'; }, 2000);
-            }
+            });
+
+            // Also setup a listener just in case getSession() completes before the auth event fires
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    window.location.href = `melodify://auth?sessionCode=${session.access_token}`;
+                }
+            });
         </script>
     </div>
 </body>

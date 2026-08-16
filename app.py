@@ -33,7 +33,7 @@ def login():
         except Exception as e:
             flash(f"Login failed: {str(e)}", "error")
 
-    return render_template('login.html')
+    return render_template('login.html', supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -48,7 +48,7 @@ def signup():
             flash("Passwords do not match.", "error")
             return render_template('signup.html')
             
-        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', password):
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', password):
             flash("Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.", "error")
             return render_template('signup.html')
 
@@ -93,33 +93,10 @@ def signup():
 
     return render_template('signup.html')
 
-@app.route('/auth/google')
-def google_auth():
-    # Redirects to Supabase Google OAuth
-    res = supabase.auth.sign_in_with_oauth(
-        {
-            "provider": 'google',
-            "options": {
-                "redirect_to": request.host_url.rstrip('/') + url_for('google_callback')
-            }
-        }
-    )
-    return redirect(res.url)
 
 @app.route('/auth/callback')
 def google_callback():
-    code = request.args.get('code')
-    if code:
-        try:
-            response = supabase.auth.exchange_code_for_session({"auth_code": code})
-            session_token = response.session.access_token
-            return redirect(f"melodify://auth?sessionCode={session_token}")
-        except Exception as e:
-            flash(f"Google Auth failed: {str(e)}", "error")
-            return redirect(url_for('login'))
-            
-    # For implicit flow fallback
-    return render_template('oauth_callback.html')
+    return render_template('oauth_callback.html', supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
