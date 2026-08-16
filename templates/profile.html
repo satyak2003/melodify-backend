@@ -50,8 +50,10 @@
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
 
-        <a href="melodify://profile" style="text-decoration: none;">
-            <button class="btn btn-secondary">Return to App</button>
+        <a href="melodify://auth?sessionCode={{ token }}" style="text-decoration: none;">
+            <button class="btn btn-secondary">
+                {% if new_user %}Complete Setup & Return to App{% else %}Return to App{% endif %}
+            </button>
         </a>
     </div>
 </body>

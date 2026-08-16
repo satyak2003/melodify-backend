@@ -1,4 +1,5 @@
 import os
+import re
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -22,29 +23,75 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        action = request.form.get('action')
         email = request.form.get('email')
         password = request.form.get('password')
 
-        if action == 'login':
-            try:
-                response = supabase.auth.sign_in_with_password({"email": email, "password": password})
-                session_token = response.session.access_token
-                return redirect(f"melodify://auth?sessionCode={session_token}")
-            except Exception as e:
-                flash(f"Login failed: {str(e)}", "error")
-        elif action == 'signup':
-            try:
-                response = supabase.auth.sign_up({"email": email, "password": password})
-                session_token = response.session.access_token if response.session else None
-                if session_token:
-                    return redirect(f"melodify://auth?sessionCode={session_token}")
-                else:
-                    flash("Signup successful! Please check your email to verify.", "success")
-            except Exception as e:
-                flash(f"Signup failed: {str(e)}", "error")
+        try:
+            response = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            session_token = response.session.access_token
+            return redirect(f"melodify://auth?sessionCode={session_token}")
+        except Exception as e:
+            flash(f"Login failed: {str(e)}", "error")
 
     return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        # Validation
+        if password != confirm_password:
+            flash("Passwords do not match.", "error")
+            return render_template('signup.html')
+            
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', password):
+            flash("Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.", "error")
+            return render_template('signup.html')
+
+        # Check unique username
+        try:
+            user_check = supabase.table("profiles").select("username").eq("username", username).execute()
+            if len(user_check.data) > 0:
+                flash("Username already exists. Please choose a different one.", "error")
+                return render_template('signup.html')
+        except Exception as e:
+            # Table might not exist or permissions issue; log it or proceed
+            pass
+
+        try:
+            response = supabase.auth.sign_up({"email": email, "password": password})
+            session_token = response.session.access_token if response.session else None
+            
+            if session_token:
+                # Update user metadata
+                supabase.auth.update_user({"data": {"username": username}})
+                
+                # Insert into profiles
+                try:
+                    # Temporary auth to insert profile using user's own token
+                    client = create_client(SUPABASE_URL, SUPABASE_KEY)
+                    client.postgrest.auth(session_token)
+                    client.table("profiles").insert({
+                        "id": response.user.id,
+                        "username": username,
+                        "avatar_url": ""
+                    }).execute()
+                except Exception as db_e:
+                    print("Could not insert profile:", db_e)
+
+                session['access_token'] = session_token
+                return redirect(url_for('profile', token=session_token, new_user='true'))
+            else:
+                flash("Signup successful! Please check your email to verify your account.", "success")
+                return redirect(url_for('login'))
+        except Exception as e:
+            flash(f"Signup failed: {str(e)}", "error")
+
+    return render_template('signup.html')
 
 @app.route('/auth/google')
 def google_auth():
@@ -53,7 +100,7 @@ def google_auth():
         {
             "provider": 'google',
             "options": {
-                "redirect_to": request.host_url + url_for('google_callback')
+                "redirect_to": request.host_url.rstrip('/') + url_for('google_callback')
             }
         }
     )
@@ -61,37 +108,33 @@ def google_auth():
 
 @app.route('/auth/callback')
 def google_callback():
-    # Typically supabase handles the redirect on the client side for OAuth (hash fragment)
-    # However, if using server side or standard auth code:
     code = request.args.get('code')
     if code:
         try:
-            # exchange code for session if applicable, but usually in PKCE flow the client does it.
-            # For simplicity, if we get an access_token in the callback (fragment), we'd need JS to pass it, 
-            # but let's assume we somehow get the session code here or prompt the user.
-            pass
+            response = supabase.auth.exchange_code_for_session({"auth_code": code})
+            session_token = response.session.access_token
+            return redirect(f"melodify://auth?sessionCode={session_token}")
         except Exception as e:
             flash(f"Google Auth failed: {str(e)}", "error")
             return redirect(url_for('login'))
             
-    # Assuming we have session from somewhere, or redirecting to Android via a JS script that parses hash.
-    # A cleaner way is a template that parses the hash and redirects to the melodify scheme.
+    # For implicit flow fallback
     return render_template('oauth_callback.html')
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
-    # This expects the user to be somewhat authenticated in the web session, which requires handling
-    # Supabase session cookies or similar, or just accepting a token via URL/header.
-    # For a simple web view:
     token = request.args.get('token')
+    new_user = request.args.get('new_user') == 'true'
+    
     if not token and 'access_token' in session:
         token = session['access_token']
     
     if not token:
         return redirect(url_for('login'))
 
-    # Set auth for this client instance (not thread safe for global client, better to create a new one or pass header)
-    supabase.postgrest.auth(token)
+    # Set auth for this request
+    client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    client.postgrest.auth(token)
     
     if request.method == 'POST':
         username = request.form.get('username')
@@ -104,23 +147,35 @@ def profile():
                 user_data = {}
                 if username: user_data['username'] = username
                 if avatar_url: user_data['avatar_url'] = avatar_url
-                supabase.auth.update_user({"data": user_data})
+                client.auth.update_user({"data": user_data})
+                
+                # Update profiles table
+                profile_update = {}
+                if username: profile_update['username'] = username
+                if avatar_url: profile_update['avatar_url'] = avatar_url
+                
+                if profile_update:
+                    try:
+                        user_resp = client.auth.get_user(token)
+                        client.table("profiles").update(profile_update).eq("id", user_resp.user.id).execute()
+                    except Exception as db_e:
+                        print("Could not update profile table:", db_e)
                 
             if new_password:
-                supabase.auth.update_user({"password": new_password})
+                client.auth.update_user({"password": new_password})
                 
             flash("Profile updated successfully!", "success")
         except Exception as e:
             flash(f"Failed to update profile: {str(e)}", "error")
 
     try:
-        user_resp = supabase.auth.get_user(token)
+        user_resp = client.auth.get_user(token)
         user = user_resp.user
     except Exception as e:
         flash("Session expired.", "error")
         return redirect(url_for('login'))
 
-    return render_template('profile.html', user=user, token=token)
+    return render_template('profile.html', user=user, token=token, new_user=new_user)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
