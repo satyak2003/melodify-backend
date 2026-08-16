@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify | Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your Profile</h1>
+            <p>Manage your account settings</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% set avatar = user.user_metadata.get('avatar_url', '') %}
+        {% set username = user.user_metadata.get('username', '') %}
+
+        <img src="{{ avatar if avatar else 'https://ui-avatars.com/api/?name=' + user.email + '&background=3b82f6&color=fff' }}" alt="Profile Picture" class="profile-avatar">
+
+        <form method="POST" action="{{ url_for('profile', token=token) }}">
+            <div class="form-group">
+                <label for="email">Email (Read Only)</label>
+                <input type="email" id="email" value="{{ user.email }}" disabled style="opacity: 0.7; cursor: not-allowed;">
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ username }}" placeholder="Display Name">
+            </div>
+            <div class="form-group">
+                <label for="avatar_url">Profile Picture URL</label>
+                <input type="url" id="avatar_url" name="avatar_url" value="{{ avatar }}" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label for="new_password">New Password (optional)</label>
+                <input type="password" id="new_password" name="new_password" placeholder="Leave blank to keep current">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+
+        <a href="melodify://profile" style="text-decoration: none;">
+            <button class="btn btn-secondary">Return to App</button>
+        </a>
+    </div>
+</body>
+</html>
