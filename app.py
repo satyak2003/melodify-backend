@@ -32,6 +32,7 @@ def login():
             return redirect(f"melodify://auth?sessionCode={session_token}")
         except Exception as e:
             flash(f"Login failed: {str(e)}", "error")
+            return render_template('login.html', supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY, email=email, error_fields=['email', 'password'])
 
     return render_template('login.html', supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
@@ -46,18 +47,18 @@ def signup():
         # Validation
         if password != confirm_password:
             flash("Passwords do not match.", "error")
-            return render_template('signup.html')
+            return render_template('signup.html', email=email, username=username, error_fields=['password', 'confirm_password'])
             
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$', password):
             flash("Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.", "error")
-            return render_template('signup.html')
+            return render_template('signup.html', email=email, username=username, error_fields=['password'])
 
         # Check unique username
         try:
             user_check = supabase.table("profiles").select("username").eq("username", username).execute()
             if len(user_check.data) > 0:
                 flash("Username already exists. Please choose a different one.", "error")
-                return render_template('signup.html')
+                return render_template('signup.html', email=email, error_fields=['username'])
         except Exception as e:
             # Table might not exist or permissions issue; log it or proceed
             pass
@@ -89,6 +90,7 @@ def signup():
                 return redirect(url_for('login'))
         except Exception as e:
             flash(f"Signup failed: {str(e)}", "error")
+            return render_template('signup.html', email=email, username=username)
 
     return render_template('signup.html')
 

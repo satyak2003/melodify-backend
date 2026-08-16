@@ -179,24 +179,35 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.alert {
-    padding: 0.75rem 1rem;
+.flash {
+    padding: 1rem 1.25rem;
     border-radius: 8px;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
     border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.alert.error {
-    background-color: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.2);
+.flash.error {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
     color: #fca5a5;
+    border-left: 4px solid #ef4444;
 }
 
-.alert.success {
-    background-color: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.2);
+.flash.success {
+    background-color: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
     color: #6ee7b7;
+    border-left: 4px solid #10b981;
+}
+
+.error-outline {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3) !important;
+    background-color: rgba(239, 68, 68, 0.05) !important;
 }
 
 .profile-avatar {

@@ -24,14 +24,14 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('login') }}">
+        <form method="POST" action="/login">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="you@example.com">
+                <input type="email" id="email" name="email" required placeholder="you@example.com" value="{{ email | default('') }}" class="{% if error_fields and 'email' in error_fields %}error-outline{% endif %}">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="••••••••">
+                <input type="password" id="password" name="password" required placeholder="" class="{% if error_fields and 'password' in error_fields %}error-outline{% endif %}">
             </div>
             
             <button type="submit" name="action" value="login" class="btn btn-primary">Log In</button>

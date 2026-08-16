@@ -24,25 +24,25 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('signup') }}">
+        <form method="POST" action="/signup">
             <div class="form-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="you@example.com">
+                <input type="email" id="email" name="email" required placeholder="you@example.com" value="{{ email | default('') }}" class="{% if error_fields and 'email' in error_fields %}error-outline{% endif %}">
             </div>
             
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" required placeholder="Choose a unique username">
+                <input type="text" id="username" name="username" required placeholder="Display Name" value="{{ username | default('') }}" class="{% if error_fields and 'username' in error_fields %}error-outline{% endif %}">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Min 8 chars, 1 Uppercase, 1 Number, 1 Special">
+                <input type="password" id="password" name="password" required placeholder="" class="{% if error_fields and 'password' in error_fields %}error-outline{% endif %}">
             </div>
             
             <div class="form-group">
                 <label for="confirm_password">Confirm Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Repeat your password">
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="" class="{% if error_fields and 'confirm_password' in error_fields %}error-outline{% endif %}">
             </div>
             
             <button type="submit" class="btn btn-primary">Sign Up</button>
