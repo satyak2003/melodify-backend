@@ -2,10 +2,12 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_super_secret_key')
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://xyzcompany.supabase.co")
