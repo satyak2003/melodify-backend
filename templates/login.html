@@ -56,15 +56,19 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = supabase.createClient("{{ supabase_url }}", "{{ supabase_key }}");
-        function signInWithGoogle() {
-            supabase.auth.signInWithOAuth({
+        window.signInWithGoogle = function() {
+            if (typeof supabase === 'undefined') {
+                alert('Authentication service failed to load. Please disable any adblockers or check your connection.');
+                return;
+            }
+            const client = supabase.createClient("{{ supabase_url }}", "{{ supabase_key }}");
+            client.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: window.location.origin + '/auth/callback'
                 }
             });
-        }
+        };
     </script>
 </body>
 </html>
