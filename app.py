@@ -140,12 +140,6 @@ def profile():
         try:
             update_data = {}
             if username or avatar_url:
-                user_data = {}
-                if username: user_data['username'] = username
-                if avatar_url: user_data['avatar_url'] = avatar_url
-                client.auth.update_user({"data": user_data})
-                
-                # Update profiles table
                 profile_update = {}
                 if username: profile_update['username'] = username
                 if avatar_url: profile_update['avatar_url'] = avatar_url
@@ -157,9 +151,6 @@ def profile():
                     except Exception as db_e:
                         print("Could not update profile table:", db_e)
                 
-            if new_password:
-                client.auth.update_user({"password": new_password})
-                
             flash("Profile updated successfully!", "success")
         except Exception as e:
             flash(f"Failed to update profile: {str(e)}", "error")
@@ -167,6 +158,15 @@ def profile():
     try:
         user_resp = client.auth.get_user(token)
         user = user_resp.user
+        
+        # Override user_metadata with data from profiles table for display
+        try:
+            profile_data = client.table("profiles").select("*").eq("id", user.id).execute()
+            if profile_data.data and len(profile_data.data) > 0:
+                user.user_metadata = profile_data.data[0]
+        except Exception as e:
+            print("Could not fetch profile table data:", e)
+            
     except Exception as e:
         flash("Session expired.", "error")
         return redirect(url_for('login'))
