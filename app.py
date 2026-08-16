@@ -117,6 +117,26 @@ def profile():
         avatar_url = request.form.get('avatar_url')
         new_password = request.form.get('new_password')
         
+        # Handle file upload for avatar
+        avatar_file = request.files.get('avatar')
+        if avatar_file and avatar_file.filename:
+            try:
+                user_id = client.auth.get_user(token).user.id
+                file_ext = os.path.splitext(avatar_file.filename)[1]
+                file_path = f"{user_id}/profile{file_ext}"
+                file_bytes = avatar_file.read()
+                
+                # Upload to Supabase Storage (requires a public 'avatars' bucket)
+                client.storage.from_("avatars").upload(
+                    file_path,
+                    file_bytes,
+                    {"content-type": avatar_file.content_type, "upsert": "true"}
+                )
+                
+                avatar_url = f"{SUPABASE_URL}/storage/v1/object/public/avatars/{file_path}"
+            except Exception as e:
+                flash(f"Failed to upload profile picture: {str(e)}", "error")
+        
         try:
             update_data = {}
             if username or avatar_url:
