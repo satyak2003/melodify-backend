@@ -19,6 +19,15 @@
             // We use Supabase JS to process the ?code= PKCE exchange or #access_token fragment automatically!
             const supabase = supabase.createClient("{{ supabase_url }}", "{{ supabase_key }}");
             
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasCode = urlParams.has('code');
+            
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    window.location.href = `melodify://auth?sessionCode=${session.access_token}`;
+                }
+            });
+
             supabase.auth.getSession().then(({ data, error }) => {
                 if (error) {
                     document.querySelector('.header p').innerText = "Authentication failed: " + error.message;
@@ -27,15 +36,19 @@
                     // Successfully retrieved the session! Redirect back to the Android App
                     window.location.href = `melodify://auth?sessionCode=${data.session.access_token}`;
                 } else {
-                    document.querySelector('.header p').innerText = "No session found. Redirecting to login...";
-                    setTimeout(() => { window.location.href = '/login'; }, 2000);
-                }
-            });
-
-            // Also setup a listener just in case getSession() completes before the auth event fires
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    window.location.href = `melodify://auth?sessionCode=${session.access_token}`;
+                    // If there's a ?code= in the URL, wait for onAuthStateChange to fire instead of immediately failing
+                    if (!hasCode) {
+                        document.querySelector('.header p').innerText = "No session found. Redirecting to login...";
+                        setTimeout(() => { window.location.href = '/login'; }, 2000);
+                    } else {
+                        document.querySelector('.header p').innerText = "Processing authentication, please wait...";
+                        // Fallback timeout in case the exchange hangs completely
+                        setTimeout(() => {
+                            if (!window.location.href.includes('melodify://')) {
+                                window.location.href = '/login';
+                            }
+                        }, 5000);
+                    }
                 }
             });
         </script>

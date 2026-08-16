@@ -48,7 +48,7 @@ def signup():
             flash("Passwords do not match.", "error")
             return render_template('signup.html')
             
-        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$', password):
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$', password):
             flash("Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.", "error")
             return render_template('signup.html')
 
@@ -70,18 +70,17 @@ def signup():
                 # Update user metadata
                 supabase.auth.update_user({"data": {"username": username}})
                 
-                # Insert into profiles
+                # Attempt to insert into profiles manually in case the user doesn't have the SQL trigger
                 try:
-                    # Temporary auth to insert profile using user's own token
-                    client = create_client(SUPABASE_URL, SUPABASE_KEY)
-                    client.postgrest.auth(session_token)
-                    client.table("profiles").insert({
-                        "id": response.user.id,
+                    user_resp = supabase.auth.get_user(session_token)
+                    supabase.table("profiles").insert({
+                        "id": user_resp.user.id,
+                        "email": email,
                         "username": username,
                         "avatar_url": ""
                     }).execute()
-                except Exception as db_e:
-                    print("Could not insert profile:", db_e)
+                except Exception as e:
+                    print("Manual profile insertion skipped (possibly already inserted by trigger):", e)
 
                 session['access_token'] = session_token
                 return redirect(url_for('profile', token=session_token, new_user='true'))
