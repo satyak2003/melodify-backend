@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify | Privacy Policy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .policy-content {
+            text-align: left;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #d1d5db;
+        }
+        .policy-content h2 {
+            color: #ffffff;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .policy-content p, .policy-content ul {
+            margin-bottom: 15px;
+        }
+        .policy-content ul {
+            padding-left: 20px;
+        }
+        .container {
+            max-width: 800px; /* Wider container for reading */
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Privacy Policy</h1>
+            <p>Last updated: August 2026</p>
+        </div>
+
+        <div class="policy-content">
+            <h2>1. Introduction</h2>
+            <p>Welcome to Melodify. We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and share your personal information when you use our desktop and mobile applications and website.</p>
+
+            <h2>2. Data We Collect</h2>
+            <p>When you use Melodify, we may collect the following types of information:</p>
+            <ul>
+                <li><strong>Account Information:</strong> If you create an account, we collect your email address, username, and profile picture.</li>
+                <li><strong>Authentication Data:</strong> If you use Google OAuth to log in, we collect basic profile information provided by Google (such as your name and email).</li>
+                <li><strong>Usage Data:</strong> We collect your music library preferences, playlists, and recently played tracks to sync them across your devices.</li>
+            </ul>
+
+            <h2>3. How We Use Your Data</h2>
+            <p>We use your data solely to provide and improve the Melodify service:</p>
+            <ul>
+                <li>To authenticate you and maintain your session.</li>
+                <li>To synchronize your music library, playlists, and settings across your devices.</li>
+                <li>To personalize your experience and recommend music.</li>
+            </ul>
+
+            <h2>4. Third-Party Services</h2>
+            <p>Melodify integrates with third-party services such as YouTube (InnerTube API) and Google OAuth. By using Melodify, you also agree to the respective privacy policies of these services. We do not sell your personal data to any third parties.</p>
+
+            <h2>5. Data Security</h2>
+            <p>We implement industry-standard security measures to protect your data. Your account information and passwords are encrypted and securely stored using Supabase.</p>
+
+            <h2>6. Contact Us</h2>
+            <p>If you have any questions about this Privacy Policy, please contact us.</p>
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center;">
+            <a href="{{ url_for('login') }}" style="text-decoration: none;">
+                <button class="btn btn-secondary" style="width: auto; padding: 10px 20px;">Return to Login</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

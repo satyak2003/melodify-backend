@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify | Terms of Service</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .policy-content {
+            text-align: left;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #d1d5db;
+        }
+        .policy-content h2 {
+            color: #ffffff;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .policy-content p, .policy-content ul {
+            margin-bottom: 15px;
+        }
+        .policy-content ul {
+            padding-left: 20px;
+        }
+        .container {
+            max-width: 800px;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Terms of Service</h1>
+            <p>Last updated: August 2026</p>
+        </div>
+
+        <div class="policy-content">
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing or using Melodify, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, then you may not access the service.</p>
+
+            <h2>2. Description of Service</h2>
+            <p>Melodify is a cross-platform music playing application that allows users to stream music and sync their library across devices. The application acts as a client to access third-party content and local media.</p>
+
+            <h2>3. User Accounts</h2>
+            <p>To use certain features, such as cloud synchronization, you must create an account. You are responsible for safeguarding the password that you use to access the service and for any activities or actions under your password.</p>
+            <p>You agree not to disclose your password to any third party. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</p>
+
+            <h2>4. Third-Party Content</h2>
+            <p>Melodify interfaces with third-party APIs (such as YouTube). We do not host any copyrighted music content on our servers. You agree that Melodify is not responsible for the content provided by third-party services and that you must comply with their respective Terms of Service when using our application.</p>
+
+            <h2>5. Intellectual Property</h2>
+            <p>The Melodify software, including its original code, features, and functionality, is owned by its developers. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of Melodify.</p>
+
+            <h2>6. Limitation of Liability</h2>
+            <p>In no event shall Melodify, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
+
+            <h2>7. Changes to Terms</h2>
+            <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.</p>
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center;">
+            <a href="{{ url_for('login') }}" style="text-decoration: none;">
+                <button class="btn btn-secondary" style="width: auto; padding: 10px 20px;">Return to Login</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
